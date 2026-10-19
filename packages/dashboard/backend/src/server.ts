@@ -2,45 +2,23 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import http from 'http';
-import { Server as IOServer } from 'socket.io';
 import { connectDB } from './db/connection';
 import flowsRouter from './routes/flows';
 import { errorHandler } from './middleware/errorHandler';
+import { initIO } from './socket';
 
 const app = express();
 const server = http.createServer(app);
-
-const io = new IOServer(server, {
-  cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-    methods: ['GET', 'POST'],
-  },
-});
 
 app.use(cors());
 app.use(express.json());
 
 app.use('/api/flows', flowsRouter);
 
-// WebSocket: salas por flowId
-io.on('connection', (socket) => {
-  console.log('[WS] Cliente conectado:', socket.id);
+// WebSocket: salas por flowId (configurado en socket.ts)
+initIO(server);
 
-  socket.on('join-flow', (flowId: string) => {
-    socket.join(flowId);
-    console.log(`[WS] ${socket.id} se unió al flujo ${flowId}`);
-  });
-
-  socket.on('leave-flow', (flowId: string) => {
-    socket.leave(flowId);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('[WS] Cliente desconectado:', socket.id);
-  });
-});
-
-export { io };
+export { initIO };
 
 app.use(errorHandler);
 

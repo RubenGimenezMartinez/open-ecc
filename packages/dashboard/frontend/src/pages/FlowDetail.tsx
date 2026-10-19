@@ -15,9 +15,12 @@ export function FlowDetail() {
     agents,
     logs,
     getPlan,
+    runFlow,
     isLoading,
     error,
   } = useFlowDetail(flowId);
+
+  const canRun = currentFlow?.status === 'pending';
 
   const socket = useFlowStore((state) => state.socket);
   const joinFlow = useFlowStore((state) => state.joinFlow);
@@ -64,9 +67,22 @@ export function FlowDetail() {
           <h1 className="text-2xl font-bold text-gray-900">{currentFlow.title}</h1>
           <p className="text-gray-600">{currentFlow.description}</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${currentFlow.status === 'completed' ? 'bg-green-100 text-green-800' : currentFlow.status === 'failed' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
-          {currentFlow.status}
-        </span>
+        <div className="flex items-end gap-3">
+          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${currentFlow.status === 'completed' ? 'bg-green-100 text-green-800' : currentFlow.status === 'failed' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
+            {currentFlow.status}
+          </span>
+          <button
+            onClick={runFlow}
+            disabled={!canRun || isLoading}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              canRun && !isLoading
+                ? 'bg-ecc-600 text-white hover:bg-ecc-700'
+                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {isLoading ? 'Ejecutando...' : 'Ejecutar flujo'}
+          </button>
+        </div>
       </div>
 
       {error && (

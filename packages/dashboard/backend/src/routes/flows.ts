@@ -7,6 +7,7 @@ import {
   getAgents,
   getLogs,
   getPlan,
+  runFlow,
 } from '../controllers/flows';
 import { asyncHandler } from '../middleware/asyncHandler';
 
@@ -19,5 +20,6 @@ router.delete('/:id', asyncHandler(deleteFlow));
 router.get('/:id/agents', asyncHandler(getAgents));
 router.get('/:id/logs', asyncHandler(getLogs));
 router.get('/:id/plan', asyncHandler(getPlan));
+router.post('/:id/run', asyncHandler(runFlow));
 
 export default router;

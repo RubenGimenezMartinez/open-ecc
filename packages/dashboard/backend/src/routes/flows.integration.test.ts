@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import { connectTestDB, disconnectTestDB } from '../db/connectTest';
 import { Flow } from '../models/Flow';
 import { AgentExecution } from '../models/AgentExecution';
@@ -7,6 +7,12 @@ import express from 'express';
 import cors from 'cors';
 import flowsRouter from './flows';
 import request from 'supertest';
+
+vi.mock('../socket', () => ({
+  io: {
+    to: vi.fn(() => ({ emit: vi.fn() })),
+  },
+}));
 
 let app: express.Express;
 
@@ -185,5 +191,64 @@ describe('Flows API Integration', () => {
     expect(res.body.meta.total).toBe(15);
     expect(res.body.meta.page).toBe(1);
     expect(res.body.meta.limit).toBe(5);
+  });
+
+  it(
+    'POST /api/flows/:id/run - debería iniciar la ejecución y devolver 200',
+    async () => {
+      const flow = await Flow.create({
+        title: 'Run Flow',
+        description: 'Desc',
+        status: 'pending',
+      });
+      await AgentExecution.insertMany(
+        [
+          'planner',
+          'architect',
+          'code-reviewer',
+          'tdd-guide',
+          'security-reviewer',
+          'build-error-resolver',
+          'e2e-runner',
+        ].map((agentName) => ({ flowId: flow._id, agentName, status: 'pending' })),
+      );
+
+      const res = await request(app)
+        .post(`/api/flows/${flow.id}/run`)
+        .expect(200);
+
+      expect(res.body.success).toBe(true);
+
+      const updatedFlow = await Flow.findById(flow.id);
+      expect(updatedFlow?.status).toBe('completed');
+
+      const agents = await AgentExecution.find({ flowId: flow.id });
+      expect(agents.length).toBe(7);
+      expect(agents.every((a) => a.status === 'running' || a.status === 'completed')).toBe(true);
+    },
+    15000,
+  );
+
+  it('POST /api/flows/:id/run - debería devolver 404 para flujo inexistente', async () => {
+    const fakeId = new (require('mongoose').Types.ObjectId)().toString();
+    await request(app).post(`/api/flows/${fakeId}/run`).expect(404);
+  });
+
+  it('POST /api/flows/:id/run - debería devolver 400 si el flujo ya está en ejecución', async () => {
+    const flow = await Flow.create({
+      title: 'Already Running',
+      description: 'Desc',
+      status: 'running',
+    });
+    await request(app).post(`/api/flows/${flow.id}/run`).expect(400);
+  });
+
+  it('POST /api/flows/:id/run - debería devolver 400 si el flujo ya se completó', async () => {
+    const flow = await Flow.create({
+      title: 'Already Completed',
+      description: 'Desc',
+      status: 'completed',
+    });
+    await request(app).post(`/api/flows/${flow.id}/run`).expect(400);
   });
 });

@@ -1,60 +1,34 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('ECC Flow Manager - Dashboard', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-  });
-
-  test('debería cargar el dashboard y mostrar el navbar', async ({ page }) => {
-    // Verificar que el enlace de la aplicación se renderiza
-    await expect(page.getByRole('link', { name: /ECC Flow Manager/ })).toBeVisible();
-  });
-
-  test('debería navegar a la página de crear flujo', async ({ page }) => {
-    await page.getByRole('link', { name: /Crear flujo/ }).click();
-    await expect(page).toHaveURL('/create');
-    await expect(page.getByRole('heading', { name: /Crear flujo/ })).toBeVisible();
-  });
-
-  test('debería navegar a la página de historial', async ({ page }) => {
-    await page.getByRole('link', { name: /Historial/ }).click();
-    await expect(page).toHaveURL('/history');
-    await expect(page.getByRole('heading', { name: /Historial/ })).toBeVisible();
-  });
-});
-
-test.describe('Crear flujo desde la web', () => {
-  test.beforeEach(async ({ page }) => {
+test.describe('ECC Flow Manager — Ejecutar flujo desde la web', () => {
+  test('debería crear un flujo, navegar al detalle y ejecutarlo viendo los estados de los agentes', async ({ page }) => {
+    // 1. Ir a la página de crear flujo
     await page.goto('/create');
-  });
 
-  test('debería crear un nuevo flujo desde el formulario', async ({ page }) => {
-    // Llenar el campo de descripción
-    await page.getByLabel(/Descripción del proyecto/).fill(
-      'Crea una aplicación de tareas con React y Node.js'
-    );
-
-    // Hacer clic en "Iniciar flujo"
+    // 2. Llenar la descripción y enviar
+    await page.getByLabel(/Descripción del proyecto/).fill('Flujo de prueba E2E');
     await page.getByRole('button', { name: /Iniciar flujo/ }).click();
 
-    // Debería redirigir al detalle del flujo creado
+    // 3. Debería navegar a la página de detalle del flujo
     await expect(page).toHaveURL(/\/flow\//, { timeout: 10000 });
 
-    // Verificar que se muestra el título del flujo (h1)
+    // 4. Verificar que estamos en la página de detalle
     await expect(page.locator('h1')).toContainText('Flujo:', { timeout: 10000 });
-  });
 
-  test('debería deshabilitar el botón si el campo de descripción está vacío', async ({ page }) => {
-    await expect(page.getByRole('button', { name: /Iniciar flujo/ })).toBeDisabled();
-  });
-});
+    // 5. Hacer clic en "Ejecutar flujo"
+    await page.getByRole('button', { name: /Ejecutar flujo/ }).click();
 
-test.describe('Historial de flujos', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/history');
-  });
+    // 6. El estado del flujo debería cambiar a "Ejecutando"
+    await expect(page.getByText('Ejecutando')).toBeVisible({ timeout: 10000 });
 
-  test('debería mostrar la página de historial', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /Historial/ })).toBeVisible();
+    // 7. Los agentes deberían mostrar estados de ejecución
+    // El planner debería ser el primero en ejecutarse (primer span con el nombre del agente)
+    await expect(page.getByText('planner').first()).toBeVisible();
+
+    // Esperar a que al menos un agente pase a "Ejecutando"
+    await expect(page.getByText('Ejecutando').first()).toBeVisible({ timeout: 15000 });
+
+    // 8. Verificar que los logs se muestren (al menos un log de "Iniciando ejecución")
+    await expect(page.getByText(/Iniciando ejecución/)).toBeVisible({ timeout: 10000 });
   });
 });

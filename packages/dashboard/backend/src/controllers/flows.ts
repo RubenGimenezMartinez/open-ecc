@@ -3,6 +3,8 @@ import { Flow, AgentExecution, ExecutionLog } from '../models';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { AppError } from '../middleware/errorHandler';
 import { z } from 'zod';
+import { AgentRunner } from '../services/agentRunner';
+import { io } from '../socket';
 
 const createFlowSchema = z.object({
   description: z.string().min(1, 'La descripción es requerida').max(5000),
@@ -135,6 +137,43 @@ export const getPlan = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+export const runFlow = asyncHandler(async (req: Request, res: Response) => {
+  if (!io) {
+    throw new AppError('Servicio WebSocket no inicializado', 500);
+  }
+
+  const flowId = req.params.id;
+
+  // Actualización atómica: solo si el flujo existe y está en 'pending'
+  const flow = await Flow.findOneAndUpdate(
+    { _id: flowId, status: 'pending' },
+    { status: 'running' },
+    { new: true },
+  );
+
+  if (!flow) {
+    const exists = await Flow.findById(flowId);
+    if (!exists) {
+      throw new AppError('Flujo no encontrado', 404);
+    }
+    throw new AppError('El flujo ya está en ejecución o se completó', 400);
+  }
+
+  const agentRunner = new AgentRunner(io);
+  try {
+    await agentRunner.runFlow(flowId);
+  } catch (error) {
+    // El agentRunner ya marca 'failed' internamente, pero re-lanzamos
+    // para que el errorHandler del Express registre el error
+    throw error;
+  }
+
+  res.json({
+    success: true,
+    data: { flowId: flow.id, status: 'completed' },
+  });
+});
+
 export default {
   getFlows,
   getFlowById,
@@ -143,4 +182,5 @@ export default {
   getAgents,
   getLogs,
   getPlan,
+  runFlow,
 };

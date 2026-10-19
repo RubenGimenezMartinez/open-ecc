@@ -8,6 +8,7 @@ export function useFlowDetail(flowId: string | null) {
   const setLogs = useFlowStore((state) => state.setLogs);
   const setLoading = useFlowStore((state) => state.setLoading);
   const setError = useFlowStore((state) => state.setError);
+  const updateFlowStatus = useFlowStore((state) => state.updateFlowStatus);
 
   const loadFlow = useCallback(async () => {
     if (!flowId) return;
@@ -48,5 +49,28 @@ export function useFlowDetail(flowId: string | null) {
     }
   }, [flowId, setLoading, setError]);
 
-  return { currentFlow: useFlowStore((s) => s.currentFlow), agents: useFlowStore((s) => s.agents), logs: useFlowStore((s) => s.logs), loadFlow, getPlan, isLoading: useFlowStore((s) => s.isLoading), error: useFlowStore((s) => s.error) };
+  const runFlow = useCallback(async () => {
+    if (!flowId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await api.runFlow(flowId);
+      updateFlowStatus(flowId, 'running');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error ejecutando el flujo');
+    } finally {
+      setLoading(false);
+    }
+  }, [flowId, setLoading, setError, updateFlowStatus]);
+
+  return {
+    currentFlow: useFlowStore((s) => s.currentFlow),
+    agents: useFlowStore((s) => s.agents),
+    logs: useFlowStore((s) => s.logs),
+    loadFlow,
+    getPlan,
+    runFlow,
+    isLoading: useFlowStore((s) => s.isLoading),
+    error: useFlowStore((s) => s.error),
+  };
 }

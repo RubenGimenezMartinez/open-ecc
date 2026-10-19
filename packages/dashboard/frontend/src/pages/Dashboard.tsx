@@ -1,13 +1,19 @@
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useFlows } from '@/hooks/useFlows';
 import { FlowList } from '@/components/FlowList';
 
 export function Dashboard() {
+  const navigate = useNavigate();
   const { flows, loadFlows, deleteFlow, isLoading, error } = useFlows();
 
   useEffect(() => {
     loadFlows();
   }, [loadFlows]);
+
+  const handleSelect = (id: string) => {
+    navigate(`/flow/${id}`);
+  };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('¿Estás seguro de que quieres eliminar este flujo?')) return;
@@ -31,7 +37,7 @@ export function Dashboard() {
         </div>
       )}
 
-      <FlowList flows={flows} onSelect={() => {}} onDelete={handleDelete} isLoading={isLoading} />
+      <FlowList flows={flows} onSelect={handleSelect} onDelete={handleDelete} isLoading={isLoading} />
     </div>
   );
 }

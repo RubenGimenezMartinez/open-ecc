@@ -63,6 +63,15 @@ class ApiService {
     const data = await this.request<{ planContent?: string }>(`/flows/${flowId}/plan`);
     return data.data || {};
   }
+
+  async runFlow(flowId: string): Promise<{ flowId: string; status: string }> {
+    const data = await this.request<{ flowId: string; status: string }>(
+      `/flows/${flowId}/run`,
+      { method: 'POST' },
+    );
+    if (!data.data) throw new Error('Error ejecutando flujo');
+    return data.data;
+  }
 }
 
 export const api = new ApiService();
