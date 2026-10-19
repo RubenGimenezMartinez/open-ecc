@@ -1,0 +1,156 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "build",
+  "description": "ECC Simplificado - Solo modelos gratuitos (Nemotron 3.5 Super VL y otros)",
+  "instructions": [
+    "instructions/INSTRUCTIONS-SIMPLE.md",
+    "skills/tdd-workflow/SKILL.md",
+    "skills/security-review/SKILL.md",
+    "skills/coding-standards/SKILL.md",
+    "skills/backend-patterns/SKILL.md",
+    "skills/frontend-patterns/SKILL.md",
+    "skills/api-design/SKILL.md"
+  ],
+  "skills": {
+    "paths": [
+      "../skills"
+    ]
+  },
+  "agent": {
+    "build": {
+      "description": "Agente principal para desarrollo de software",
+      "mode": "primary",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "read": true,
+        "changed-files": true
+      }
+    },
+    "planner": {
+      "description": "Especialista en planificación de implementación para características complejas y refactorización.",
+      "mode": "subagent",
+      "prompt": "{file:prompts/agents/simple/planner.txt}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "architect": {
+      "description": "Especialista en arquitectura de software, diseño de sistemas y toma de decisiones técnicas.",
+      "mode": "subagent",
+      "prompt": "{file:prompts/agents/simple/architect.txt}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "code-reviewer": {
+      "description": "Especialista en revisión de código. Revisa calidad, seguridad y mantenibilidad.",
+      "mode": "subagent",
+      "prompt": "{file:prompts/agents/simple/code-reviewer.txt}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "security-reviewer": {
+      "description": "Especialista en detección y remediación de vulnerabilidades de seguridad.",
+      "mode": "subagent",
+      "prompt": "{file:prompts/agents/simple/security-reviewer.txt}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": true,
+        "edit": true
+      }
+    },
+    "tdd-guide": {
+      "description": "Especialista en Desarrollo Dirigido por Pruebas (TDD). Garantiza 80%+ de cobertura.",
+      "mode": "subagent",
+      "prompt": "{file:prompts/agents/simple/tdd-guide.txt}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "build-error-resolver": {
+      "description": "Especialista en resolución de errores de build y TypeScript. Fixes con diffs mínimos.",
+      "mode": "subagent",
+      "prompt": "{file:prompts/agents/simple/build-error-resolver.txt}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "e2e-runner": {
+      "description": "Especialista en pruebas E2E con Playwright para flujos críticos de usuario.",
+      "mode": "subagent",
+      "prompt": "{file:prompts/agents/simple/e2e-runner.txt}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    }
+  },
+  "command": {
+    "plan": {
+      "description": "Crear un plan de implementación detallado para características complejas",
+      "template": "{file:commands/plan.md}\n\n$ARGUMENTS",
+      "agent": "planner",
+      "subtask": true
+    },
+    "tdd": {
+      "description": "Aplicar flujo TDD con 80%+ de cobertura de pruebas",
+      "template": "{file:commands/tdd.md}\n\n$ARGUMENTS",
+      "agent": "tdd-guide",
+      "subtask": true
+    },
+    "code-review": {
+      "description": "Revisar código por calidad, seguridad y mantenibilidad",
+      "template": "{file:commands/code-review.md}\n\n$ARGUMENTS",
+      "agent": "code-reviewer",
+      "subtask": true
+    },
+    "security": {
+      "description": "Ejecutar revisión de seguridad exhaustiva",
+      "template": "{file:commands/security.md}\n\n$ARGUMENTS",
+      "agent": "security-reviewer",
+      "subtask": true
+    },
+    "build-fix": {
+      "description": "Corregir errores de build y TypeScript con cambios mínimos",
+      "template": "{file:commands/build-fix.md}\n\n$ARGUMENTS",
+      "agent": "build-error-resolver",
+      "subtask": true
+    },
+    "e2e": {
+      "description": "Generar y ejecutar pruebas E2E con Playwright",
+      "template": "{file:commands/e2e.md}\n\n$ARGUMENTS",
+      "agent": "e2e-runner",
+      "subtask": true
+    },
+    "refactor-clean": {
+      "description": "Eliminar código muerto y consolidar duplicados",
+      "template": "{file:commands/refactor-clean.md}\n\n$ARGUMENTS",
+      "agent": "build",
+      "subtask": true
+    }
+  },
+  "permission": {
+    "mcp_*": "ask"
+  }
+}
