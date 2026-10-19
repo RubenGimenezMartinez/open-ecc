@@ -42,6 +42,12 @@ export const useFlowStore = create<FlowState>()(
 
       setFlows: (flows) => set({ flows }),
       addFlow: (flow) => set((state) => ({ flows: [flow, ...state.flows] })),
+      removeFlow: (id) =>
+        set((state) => ({
+          flows: state.flows.filter((f) => f.id !== id),
+          currentFlow:
+            state.currentFlow?.id === id ? null : state.currentFlow,
+        })),
       updateFlowStatus: (id, status) =>
         set((state) => ({
           flows: state.flows.map((f) =>

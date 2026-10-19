@@ -146,6 +146,41 @@ describe('useFlowStore', () => {
     expect(state.error).toBe(null);
   });
 
+  it('removeFlow should remove flow from flows array', () => {
+    const flow2: Flow = { ...baseFlow, id: 'flow-2', title: 'Second Flow' };
+    useFlowStore.getState().setFlows([baseFlow, flow2]);
+
+    useFlowStore.getState().removeFlow('flow-1');
+
+    const state = useFlowStore.getState();
+    expect(state.flows).toHaveLength(1);
+    expect(state.flows[0].id).toBe('flow-2');
+  });
+
+  it('removeFlow should clear currentFlow when removing the current flow', () => {
+    useFlowStore.getState().setFlows([baseFlow]);
+    useFlowStore.getState().setCurrentFlow(baseFlow);
+
+    useFlowStore.getState().removeFlow('flow-1');
+
+    const state = useFlowStore.getState();
+    expect(state.flows).toHaveLength(0);
+    expect(state.currentFlow).toBeNull();
+  });
+
+  it('removeFlow should not clear currentFlow when removing a different flow', () => {
+    const flow2: Flow = { ...baseFlow, id: 'flow-2', title: 'Second Flow' };
+    useFlowStore.getState().setFlows([baseFlow, flow2]);
+    useFlowStore.getState().setCurrentFlow(baseFlow);
+
+    useFlowStore.getState().removeFlow('flow-2');
+
+    const state = useFlowStore.getState();
+    expect(state.flows).toHaveLength(1);
+    expect(state.flows[0].id).toBe('flow-1');
+    expect(state.currentFlow?.id).toBe('flow-1');
+  });
+
   it('immutability: setFlows should store a copy of the array', () => {
     const flowsCopy = [...[baseFlow]];
     useFlowStore.getState().setFlows(flowsCopy);

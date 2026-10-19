@@ -99,4 +99,20 @@ describe('useFlows hook', () => {
     expect(api.deleteFlow).toHaveBeenCalledWith('flow-1');
     expect(useFlowStore.getState().isLoading).toBe(false);
   });
+
+  it('deleteFlow should remove flow from store after successful deletion', async () => {
+    vi.mocked(api.deleteFlow).mockResolvedValue(undefined);
+
+    useFlowStore.getState().setFlows([baseFlow]);
+
+    const { result } = renderHook(() => useFlows());
+
+    await act(async () => {
+      await result.current.deleteFlow('flow-1');
+    });
+
+    expect(api.deleteFlow).toHaveBeenCalledWith('flow-1');
+    expect(useFlowStore.getState().flows).toHaveLength(0);
+    expect(useFlowStore.getState().isLoading).toBe(false);
+  });
 });

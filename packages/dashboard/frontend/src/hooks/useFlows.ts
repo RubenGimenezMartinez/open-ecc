@@ -6,6 +6,7 @@ export function useFlows() {
   const setFlows = useFlowStore((state) => state.setFlows);
   const setLoading = useFlowStore((state) => state.setLoading);
   const setError = useFlowStore((state) => state.setError);
+  const removeFlow = useFlowStore((state) => state.removeFlow);
 
   const loadFlows = useCallback(async (page = 1, limit = 10, status?: string) => {
     setLoading(true);
@@ -39,13 +40,14 @@ export function useFlows() {
     setError(null);
     try {
       await api.deleteFlow(id);
+      removeFlow(id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error eliminando flujo');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [setLoading, setError]);
+  }, [setLoading, setError, removeFlow]);
 
   return { flows: useFlowStore((s) => s.flows), loadFlows, createFlow, deleteFlow, isLoading: useFlowStore((s) => s.isLoading), error: useFlowStore((s) => s.error) };
 }
