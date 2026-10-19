@@ -94,6 +94,7 @@ El objetivo es tener una **interfaz visual de gestión del flujo de agentes ECC*
 - Exportar reporte de ejecución (PDF/JSON)
 - Temas oscuro/claro
 - Arrastre para reordenar prioridad de planes
+- **Archify**: Integrar Archify para generar diagramas interactivos de flujos de ejecución, permitiendo visualizar y añadir funcionalidades a los flujos desde la UI
 
 ---
 

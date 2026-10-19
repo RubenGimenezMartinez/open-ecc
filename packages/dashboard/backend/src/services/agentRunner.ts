@@ -1,5 +1,6 @@
 import { Server as IOServer } from 'socket.io';
 import { Flow, AgentExecution, ExecutionLog } from '../models';
+import { AgentContentGenerator } from '../lib/agentContentGenerator';
 
 export const AGENT_ORDER = [
   'planner',
@@ -21,10 +22,16 @@ const isValidAgentName = (name: string): name is AgentName =>
 export class AgentRunner {
   private io: IOServer;
   private agentDelayMs: number;
+  private contentGenerator: AgentContentGenerator;
 
-  constructor(io: IOServer, agentDelayMs: number = DEFAULT_AGENT_DELAY_MS) {
+  constructor(
+    io: IOServer,
+    agentDelayMs: number = DEFAULT_AGENT_DELAY_MS,
+    contentGenerator?: AgentContentGenerator,
+  ) {
     this.io = io;
     this.agentDelayMs = agentDelayMs;
+    this.contentGenerator = contentGenerator ?? new AgentContentGenerator();
   }
 
   private delay(ms: number): Promise<void> {
@@ -46,11 +53,13 @@ export class AgentRunner {
     flowId: string,
     agentName: AgentName,
     status: AgentExecution['status'],
+    outputSummary?: string,
   ): Promise<void> {
     const updateData: Record<string, unknown> = { status };
 
     if (status === 'running') updateData.startedAt = new Date();
     if (status === 'completed' || status === 'failed') updateData.completedAt = new Date();
+    if (outputSummary) updateData.outputSummary = outputSummary;
 
     await AgentExecution.findByIdAndUpdate(agentId, updateData, { new: true });
 
@@ -58,7 +67,26 @@ export class AgentRunner {
       agentId,
       agentName,
       status,
+      outputSummary,
     });
+  }
+
+  private async generateAgentContent(
+    agentName: AgentName,
+    flowDescription: string,
+    flowModel: string,
+  ): Promise<string> {
+    const content = this.contentGenerator.generateContent(agentName, {
+      description: flowDescription,
+      model: flowModel,
+      agentName,
+    });
+
+    if (!content) {
+      return `Agente ${agentName}: Ejecución completada para el proyecto "${flowDescription}" usando modelo ${flowModel}.`;
+    }
+
+    return content;
   }
 
   async runFlow(flowId: string): Promise<void> {
@@ -83,11 +111,18 @@ export class AgentRunner {
           throw new Error(`Agente desconocido: ${agentExecution.agentName}`);
         }
 
+        const agentContent = await this.generateAgentContent(
+          agentExecution.agentName,
+          flow.description,
+          flow.modelUsed,
+        );
+
         await this.updateAgentStatus(
           agentExecution.id,
           flowId,
           agentExecution.agentName,
           'running',
+          agentContent,
         );
         await this.emitLog(
           flowId,
@@ -103,6 +138,7 @@ export class AgentRunner {
           flowId,
           agentExecution.agentName,
           'completed',
+          agentContent,
         );
         await this.emitLog(
           flowId,
