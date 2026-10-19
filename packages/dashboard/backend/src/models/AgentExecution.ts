@@ -26,8 +26,12 @@ const AgentExecutionSchema = new Schema<IAgentExecution>(
     outputSummary: { type: String },
     errorMessage: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+AgentExecutionSchema.virtual('id').get(function () {
+  return this._id.toString();
+});
 
 AgentExecutionSchema.index({ flowId: 1 });
 AgentExecutionSchema.index({ agentName: 1 });

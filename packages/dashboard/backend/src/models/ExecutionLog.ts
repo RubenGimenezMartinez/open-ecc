@@ -19,8 +19,12 @@ const ExecutionLogSchema = new Schema<IExecutionLog>(
       default: 'info',
     },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+ExecutionLogSchema.virtual('id').get(function () {
+  return this._id.toString();
+});
 
 ExecutionLogSchema.index({ flowId: 1 });
 ExecutionLogSchema.index({ createdAt: -1 });

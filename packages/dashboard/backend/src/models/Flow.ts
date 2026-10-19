@@ -24,7 +24,11 @@ const FlowSchema = new Schema<IFlow>(
     modelUsed: { type: String, default: 'nemotron-3.5-super-vl', trim: true },
     completedAt: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+FlowSchema.virtual('id').get(function () {
+  return this._id.toString();
+});
 
 export const Flow = mongoose.model<IFlow>('Flow', FlowSchema);
