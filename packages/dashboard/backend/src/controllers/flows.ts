@@ -5,6 +5,7 @@ import { AppError } from '../middleware/errorHandler';
 import { z } from 'zod';
 import { AgentRunner } from '../services/agentRunner';
 import { io } from '../socket';
+import { withId, withIds } from '../lib/mapper';
 
 const createFlowSchema = z.object({
   description: z.string().min(1, 'La descripción es requerida').max(5000),
@@ -29,7 +30,7 @@ export const getFlows = asyncHandler(async (req: Request, res: Response) => {
 
   res.json({
     success: true,
-    data: flows,
+    data: withIds(flows),
     meta: { total, page, limit },
   });
 });
@@ -41,7 +42,7 @@ export const getFlowById = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError('Flujo no encontrado', 404);
   }
 
-  res.json({ success: true, data: flow });
+  res.json({ success: true, data: withId(flow) });
 });
 
 export const createFlow = asyncHandler(async (req: Request, res: Response) => {
@@ -101,7 +102,7 @@ export const getAgents = asyncHandler(async (req: Request, res: Response) => {
     .sort({ createdAt: 1 })
     .lean();
 
-  res.json({ success: true, data: agents });
+  res.json({ success: true, data: withIds(agents) });
 });
 
 export const getLogs = asyncHandler(async (req: Request, res: Response) => {
@@ -110,7 +111,7 @@ export const getLogs = asyncHandler(async (req: Request, res: Response) => {
     .limit(100)
     .lean();
 
-  res.json({ success: true, data: logs });
+  res.json({ success: true, data: withIds(logs) });
 });
 
 export const getPlan = asyncHandler(async (req: Request, res: Response) => {
@@ -128,7 +129,7 @@ export const getPlan = asyncHandler(async (req: Request, res: Response) => {
   res.json({
     success: true,
     data: {
-      flowId: flow._id,
+      flowId: flow._id.toString(),
       title: flow.title,
       description: flow.description,
       planContent: planAgent?.outputSummary || null,
