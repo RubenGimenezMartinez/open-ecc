@@ -1,0 +1,8 @@
+{
+  "name": "@ecc/dashboard",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
+}
