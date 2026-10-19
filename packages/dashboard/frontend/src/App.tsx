@@ -1,9 +1,24 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { Dashboard } from '@/pages/Dashboard';
 import { CreateFlow } from '@/pages/CreateFlow';
 import { FlowDetail } from '@/pages/FlowDetail';
 import { History } from '@/pages/History';
+import { useFlowStore } from '@/store/useFlowStore';
+
 export function App() {
+  const connectSocket = useFlowStore((state) => state.connectSocket);
+
+  useEffect(() => {
+    connectSocket(
+      import.meta.env.VITE_API_BASE?.replace('/api', '') || 'http://localhost:5000'
+    );
+
+    return () => {
+      // Limpieza al desmontar
+    };
+  }, [connectSocket]);
+
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-50">

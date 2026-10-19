@@ -1,8 +1,10 @@
 import { useParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useFlowDetail } from '@/hooks/useFlowDetail';
 import { AgentTimeline } from '@/components/AgentTimeline';
 import { PlanDisplay } from '@/components/PlanDisplay';
 import { LogEntry } from '@/components/LogEntry';
+import { useFlowStore } from '@/store/useFlowStore';
 
 export function FlowDetail() {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +18,28 @@ export function FlowDetail() {
     isLoading,
     error,
   } = useFlowDetail(flowId);
+
+  const socket = useFlowStore((state) => state.socket);
+  const joinFlow = useFlowStore((state) => state.joinFlow);
+  const leaveFlow = useFlowStore((state) => state.leaveFlow);
+
+  const connectSocket = useFlowStore((state) => state.connectSocket);
+
+  // Conectar al WebSocket y unirse a la sala del flujo
+  useEffect(() => {
+    if (!socket) {
+      connectSocket(import.meta.env.VITE_API_BASE?.replace('/api', '') || 'http://localhost:5000');
+    }
+    if (flowId && socket) {
+      joinFlow(flowId);
+    }
+
+    return () => {
+      if (flowId && socket) {
+        leaveFlow(flowId);
+      }
+    };
+  }, [flowId, socket, connectSocket, joinFlow, leaveFlow]);
 
   if (isLoading && !currentFlow) {
     return (
@@ -71,13 +95,16 @@ export function FlowDetail() {
         </div>
 
         <div className="lg:col-span-1 space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">Logs</h2>
-            <div className="max-h-[400px] overflow-y-auto space-y-1 border border-gray-200 rounded p-2 bg-gray-50">
-              {logs.map((log) => (
-                <LogEntry key={log.id} log={log} />
-              ))}
-            </div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-gray-800">Logs</h2>
+            <span className={`px-2 py-0.5 rounded text-xs font-semibold ${socket?.connected ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+              {socket?.connected ? 'Conectado' : 'Desconectado'}
+            </span>
+          </div>
+          <div className="max-h-[400px] overflow-y-auto space-y-1 border border-gray-200 rounded p-2 bg-gray-50">
+            {logs.map((log) => (
+              <LogEntry key={log.id} log={log} />
+            ))}
           </div>
         </div>
       </div>

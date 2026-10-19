@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { io, type Socket } from 'socket.io-client';
 import type { Flow, AgentExecution, ExecutionLog, AgentStatus, FlowStatus } from '@/types';
 
 interface FlowState {
@@ -9,7 +10,7 @@ interface FlowState {
   logs: ExecutionLog[];
   isLoading: boolean;
   error: string | null;
-  socket: WebSocket | null;
+  socket: Socket | null;
 
   setFlows: (flows: Flow[]) => void;
   addFlow: (flow: Flow) => void;
@@ -23,6 +24,8 @@ interface FlowState {
   setError: (error: string | null) => void;
   connectSocket: (url: string) => void;
   disconnectSocket: () => void;
+  joinFlow: (flowId: string) => void;
+  leaveFlow: (flowId: string) => void;
   reset: () => void;
 }
 
@@ -62,15 +65,72 @@ export const useFlowStore = create<FlowState>()(
       setLoading: (loading) => set({ isLoading: loading }),
       setError: (error) => set({ error }),
       connectSocket: (url) => {
-        const socket = new WebSocket(url);
+        const socket = io(url, {
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+        });
+
+        socket.on('connect', () => {
+          console.log('[WS] Conectado:', socket.id);
+        });
+
+        socket.on('disconnect', () => {
+          console.log('[WS] Desconectado');
+        });
+
+        socket.on('connect_error', (err) => {
+          console.error('[WS] Error de conexión:', err.message);
+          set({ error: 'No se pudo conectar al servidor de tiempo real' });
+        });
+
+        // Escuchar eventos de estado de agentes
+        socket.on('agent:status', (data: { agentId: string; status: AgentStatus }) => {
+          set((state) => ({
+            agents: state.agents.map((a) =>
+              a.id === data.agentId ? { ...a, status: data.status } : a
+            ),
+          }));
+        });
+
+        // Escuchar eventos de logs
+        socket.on('log:added', (data: ExecutionLog) => {
+          set((state) => ({ logs: [data, ...state.logs] }));
+        });
+
+        // Escuchar eventos de cambio de estado de flujo
+        socket.on('flow:status', (data: { flowId: string; status: FlowStatus }) => {
+          set((state) => ({
+            flows: state.flows.map((f) =>
+              f.id === data.flowId ? { ...f, status: data.status } : f
+            ),
+            currentFlow:
+              state.currentFlow?.id === data.flowId
+                ? { ...state.currentFlow, status: data.status }
+                : state.currentFlow,
+          }));
+        });
+
         set({ socket });
-        return socket;
       },
       disconnectSocket: () =>
         set((state) => {
-          state.socket?.close();
+          state.socket?.disconnect();
           return { socket: null };
         }),
+      joinFlow: (flowId) => {
+        set((state) => {
+          state.socket?.emit('join-flow', flowId);
+          return state;
+        });
+      },
+      leaveFlow: (flowId) => {
+        set((state) => {
+          state.socket?.emit('leave-flow', flowId);
+          return state;
+        });
+      },
       reset: () =>
         set({
           flows: [],
