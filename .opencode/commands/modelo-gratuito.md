@@ -11,15 +11,17 @@ Selecciona y configura un modelo gratuito de OpenCode para usar con ECC Simplifi
 | Modelo | Ideal para |
 |--------|------------|
 | **Nemotron 3.5 Super VL** | Desarrollo general, coding (recomendado) |
-| Beam | Tareas ligeras, pair programming |
-| LongCat 2.5 Preview | Contextos largos, documentos extensos |
-| Space Bunny | Razonamiento complejo |
-| MiMo-V2.6-Flash | Respuestas rápidas, tareas simples |
-| DeepSeek V4.1 Flash | Coding, razonamiento técnico |
-| GLM-5.3-Flash | Tareas multilingües |
-| Nemotron 3.5 Lightning | Velocidad, tareas repetitivas |
-| Nemotron 3 Ultra | Tareas complejas, arquitectura |
+| Nemotron 3.5 Lightning | Velocidad, tareas repetitivas, TDD |
+| DeepSeek V4.1 Flash | Coding, razonamiento técnico, revisiones |
 | Big Pickle | Tareas especializadas |
+| Beam | Tareas ligeras, pair programming |
+| MiMo-V2.6-Flash | Respuestas rápidas, pruebas E2E |
+| Tidepool Alpha | Razonamiento y planificación |
+| Hy4 flash | Tareas rápidas y ligeras |
+| Iceman | Análisis y revisión de código |
+| Flint 40B | Tareas de razonamiento general |
+
+*Nota: Los modelos LongCat 2.5 Preview, Space Bunny, GLM-5.3-Flash y Nemotron 3 Ultra ya no aparecen como disponibles en el selector de modelos de OpenCode.*
 
 ## Pasos
 

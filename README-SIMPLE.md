@@ -19,17 +19,51 @@ OpenCode proporciona los siguientes modelos **100% gratuitos** (sin API key):
 | Modelo | Estado |
 |--------|--------|
 | **Nemotron 3.5 Super VL** | ✅ Seleccionado por defecto |
-| Beam | ✅ Gratis |
-| LongCat 2.5 Preview | ✅ Gratis |
-| Space Bunny | ✅ Gratis |
-| MiMo-V2.6-Flash | ✅ Gratis |
-| DeepSeek V4.1 Flash | ✅ Gratis |
-| GLM-5.3-Flash | ✅ Gratis |
 | Nemotron 3.5 Lightning | ✅ Gratis |
-| Nemotron 3 Ultra | ✅ Gratis |
+| DeepSeek V4.1 Flash | ✅ Gratis |
 | Big Pickle | ✅ Gratis |
+| Beam | ✅ Gratis |
+| MiMo-V2.6-Flash | ✅ Gratis |
+| Tidepool Alpha | ✅ Gratis |
+| Hy4 flash | ✅ Gratis |
+| Iceman | ✅ Gratis |
+| Flint 40B | ✅ Gratis |
+
+*Nota: Los modelos LongCat 2.5 Preview, Space Bunny, GLM-5.3-Flash y Nemotron 3 Ultra ya no aparecen como disponibles en el selector de modelos de OpenCode.*
 
 Selecciona cualquiera desde **Configuración → Seleccionar modelo** en OpenCode.
+
+## Asignación de Modelos por Parte del Flujo de Trabajo
+
+Cada agente del flujo ECC tiene un propósito diferente. Aquí tienes qué modelo gratuito encaja mejor en cada etapa:
+
+| Parte del flujo | Comando | Agente | Modelo recomendado | ¿Por qué? |
+|---|---|---|---|---|
+| **Planificación** | `/plan` | `planner` | Nemotron 3.5 Super VL | Razonamiento complejo, comprensión de arquitectura y visión general |
+| **Arquitectura** | (interno) | `architect` | Nemotron 3.5 Super VL | Diseño de sistema, análisis de trade-offs, decisiones técnicas |
+| **Desarrollo TDD** | `/tdd` | `tdd-guide` | Nemotron 3.5 Lightning | Iteraciones rápidas, escritura de tests y código paso a paso |
+| **Revisión de código** | `/code-review` | `code-reviewer` | DeepSeek V4.1 Flash | Análisis detallado, detección de problemas de calidad |
+| **Revisión de seguridad** | `/security` | `security-reviewer` | DeepSeek V4.1 Flash | Detección de vulnerabilidades, patrones de ataque OWASP |
+| **Corrección de build** | `/build-fix` | `build-error-resolver` | Nemotron 3.5 Lightning | Fixes mínimos, correcciones rápidas de tipo y compilación |
+| **Pruebas E2E** | `/e2e` | `e2e-runner` | MiMo-V2.6-Flash | Automatización de flujos, generación de pruebas de usuario |
+
+### Configuración rápida
+
+```bash
+# Seleccionar modelo por defecto (planificación y arquitectura)
+Nemotron 3.5 Super VL
+
+# Para desarrollo rápido y fixes
+Nemotron 3.5 Lightning
+
+# Para revisiones de código y seguridad
+DeepSeek V4.1 Flash
+
+# Para pruebas E2E y automatización
+MiMo-V2.6-Flash
+```
+
+En OpenCode, ve a **Configuración → Seleccionar modelo** y elige el modelo apropiado para cada tarea del flujo.
 
 ## Instalación Rápida
 

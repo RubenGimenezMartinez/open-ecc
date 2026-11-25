@@ -7,15 +7,17 @@ Este documento consolida las reglas esenciales de ECC para OpenCode, configurado
 **Nemotron 3.5 Super VL** (seleccionado por defecto en tu OpenCode)
 
 Otros modelos gratuitos disponibles en tu instancia:
+- Nemotron 3.5 Lightning
 - Beam
-- LongCat 2.5 Preview
-- Space Bunny
 - MiMo-V2.6-Flash
 - DeepSeek V4.1 Flash
-- GLM-5.3-Flash
-- Nemotron 3.5 Lightning
-- Nemotron 3 Ultra
 - Big Pickle
+- Tidepool Alpha
+- Hy4 flash
+- Iceman
+- Flint 40B
+
+*Nota: Los modelos LongCat 2.5 Preview, Space Bunny, GLM-5.3-Flash y Nemotron 3 Ultra ya no aparecen como disponibles en el selector de modelos de OpenCode.*
 
 Selecciona cualquiera de estos desde el menú "Seleccionar modelo" de OpenCode. No se requiere API key ni tarjeta de crédito.
 
